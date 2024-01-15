@@ -1,0 +1,19 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+
+<PageTitle>Home</PageTitle>
+
+<Hello Message="Hola, mundo desde: " />
+
+Welcome to your new app.
+
+<button @onclick="HandleClick">Hello</button>
+
+@code
+{
+    private void HandleClick()
+    {
+        NavigationManager.NavigateTo("/hello");
+    }
+}

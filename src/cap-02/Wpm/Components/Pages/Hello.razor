@@ -1,0 +1,19 @@
+﻿@page "/hello/{ShowDocumentsPath:bool=false}"
+<h1>@Message @Environment.MachineName</h1>
+
+@code 
+{
+    [Parameter]
+    public bool ShowDocumentsPath { get; set; }
+
+    [Parameter]
+    public required string Message { get; set; } = "Hello, world!";
+
+    protected override void OnInitialized()
+    {
+        if (ShowDocumentsPath)
+        {
+            Message = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        }
+    }
+}

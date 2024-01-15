@@ -1,0 +1,64 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+@using Wpm.Dal
+@using Wpm.Domain
+
+@page "/pets"
+@rendermode InteractiveServer
+@inject WpmDbContext DbContext
+
+<h3>Mascotas</h3>
+
+<div class="page-size-chooser">
+    Elementos por página:
+    <select @bind="pagination.ItemsPerPage">
+        <option>5</option>
+        <option>10</option>
+        <option>20</option>
+        <option>40</option>
+    </select>
+</div>
+
+<QuickGrid Items="@DbContext.Pets.Where(p => nameFilter!=null?p.Name.Contains(nameFilter, StringComparison.CurrentCultureIgnoreCase):true).Include(p => p.Breed).ThenInclude(b => b.Species).Where(p => (showDogs && p.Breed.SpeciesId == 1) || (showCats && p.Breed.SpeciesId == 2) || (showRabbits && p.Breed.SpeciesId == 3))"
+    Pagination="@pagination">
+    <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
+    <PropertyColumn Title="Nombre" Property="@(p => p.Name)" Sortable="true">
+        <ColumnOptions>
+            <div>
+                <input type="search" autofocus @bind="nameFilter"
+                    @bind:event="oninput"
+                    placeholder="Nombre de la mascota..." />
+            </div>
+        </ColumnOptions>
+    </PropertyColumn>
+    <PropertyColumn Title="Edad" Property="@(p => p.Age)" Sortable="true" />
+    <PropertyColumn Title="Peso" Property="@(p => p.Weight)" Sortable="true" />
+    <PropertyColumn Title="Especie" Property="@(p => p.Breed.Species.Name)" Sortable="true">
+        <ColumnOptions>
+            <div class="col-md-4 form-check">           
+                <input class="form-check-input" type="checkbox" @bind="showDogs" /> Perros
+                <input class="form-check-input" type="checkbox" @bind="showCats" /> Gatos
+                <input class="form-check-input" type="checkbox" @bind="showRabbits" /> Conejos
+            </div>
+        </ColumnOptions>
+    </PropertyColumn>
+    <PropertyColumn Title="Raza" Property="@(p => p.Breed.Name)" Sortable="true" />
+    <TemplateColumn>
+        <button @onclick="@(()=>Edit(context))">Editar...</button>
+    </TemplateColumn>
+</QuickGrid>
+
+<Paginator State="@pagination" />
+
+@code {
+    PaginationState pagination = new PaginationState() { ItemsPerPage = 10 };
+    string? nameFilter = null;
+    bool showDogs = true;
+    bool showCats = true;
+    bool showRabbits = true;
+
+    void Edit(Pet pet)
+    {
+        
+    }
+}

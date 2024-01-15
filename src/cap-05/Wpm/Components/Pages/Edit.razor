@@ -1,0 +1,92 @@
+﻿@using System.ComponentModel.DataAnnotations
+
+@page "/pets/edit/{id:int}"
+@inject WpmDbContext DbContext
+@inject NavigationManager NavigationManager
+
+<h3>Edit</h3>
+
+<EditForm Model="Model" OnValidSubmit="Submit" FormName="PetForm">
+
+    <div class="from-group mb-5">
+        <label class="form-label" for="name">Nombre</label>
+        <InputText id="name" DisplayName="Nombre" @bind-Value="Model.Name" class="form-control" />
+
+        <label class="form-label" for="age">Edad</label>
+        <InputNumber id="age" DisplayName="Edad" @bind-Value="Model.Age" @bind-Value:format="N0" class="form-control" />
+
+        <label class="form-label" for="weight">Peso</label>
+        <InputNumber id="weight" DisplayName="Peso" @bind-Value="Model.Weight" @bind-Value:format="N1" class="form-control" />
+
+        <label class="form-label" for="breed">Raza</label>
+        <InputSelect id="breed" @bind-Value="Model.BreedId" class="form-select">
+            @foreach (var breed in DbContext.Breeds.Where(b => b.SpeciesId == pet.Breed.SpeciesId))
+            {
+                <option value="@breed.Id">@breed.Name</option>
+            }
+        </InputSelect>
+    </div>
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <button class="btn btn-primary" type="submit">Guardar</button>
+    </div>
+
+</EditForm>
+
+@code {
+    Pet pet;
+
+    [SupplyParameterFromForm]
+    public PetViewModel? Model { get; set; }
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        pet = await DbContext.Pets
+        .Include(p => p.Breed)
+        .ThenInclude(b => b.Species)
+        .Where(p => p.Id == Id)
+        .FirstOrDefaultAsync();
+
+        Model ??= new()
+        {
+            Name = pet.Name,
+            Age = pet.Age,
+            Weight = pet.Weight
+        };
+    }
+
+    async Task Submit()
+    {
+        var pet = await DbContext.Pets.FindAsync(Id);
+        pet.Name = Model.Name;
+        pet.Age = Model.Age;
+        pet.Weight = Model.Weight;
+        pet.BreedId = Model.BreedId;
+
+        await DbContext.SaveChangesAsync();
+
+        NavigationManager.NavigateTo($"/pets");
+    }
+
+    public class PetViewModel
+    {
+        [Required]
+        [StringLength(50, ErrorMessage="El nombre es demasiado largo")]
+        public string Name { get; set; }
+
+        [Range(0, 30)]
+        public int? Age { get; set; }
+
+        [Range(0.1d, 100d)]
+        public decimal? Weight { get; set; }
+
+        [Required]
+        public int BreedId { get; set; }
+    }
+}

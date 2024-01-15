@@ -1,0 +1,14 @@
+﻿@page "/"
+@using Wpm.Dal
+@rendermode InteractiveServer
+@inject WpmDbContext DbContext
+
+<PageTitle>Home</PageTitle>
+
+<ul>
+    @foreach (var item in DbContext.Pets)
+    {
+        <li>@item.Name</li>
+    }
+
+</ul>
